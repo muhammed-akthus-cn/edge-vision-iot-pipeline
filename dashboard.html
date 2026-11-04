@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Occupancy Tracker Dashboard</title>
+    
+    <!-- Load Firebase SDK (v8 compat for direct HTML usage) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #121212; 
+            color: #ffffff; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .dashboard-card { 
+            background-color: #1e1e1e; 
+            padding: 50px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.8); 
+            text-align: center; 
+            border-top: 5px solid #00e676; 
+            width: 320px;
+        }
+        .title { 
+            font-size: 1.2rem; 
+            color: #aaaaaa; 
+            margin-bottom: 20px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+        }
+        .count { 
+            font-size: 6rem; 
+            font-weight: bold; 
+            color: #00e676; 
+            margin: 0; 
+            transition: color 0.3s ease; 
+        }
+        .status { 
+            margin-top: 25px; 
+            font-size: 0.95rem; 
+            color: #888888; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .live-indicator { 
+            display: inline-block; 
+            width: 12px; 
+            height: 12px; 
+            background-color: #00e676; 
+            border-radius: 50%; 
+            margin-right: 8px; 
+            animation: blink 1.5s infinite; 
+        }
+        @keyframes blink { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.3; } 
+            100% { opacity: 1; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <div class="title">Live Occupancy</div>
+        <div class="count" id="occupancy-count">--</div>
+        <div class="status">
+            <span class="live-indicator"></span> Edge AI Sensor Feed
+        </div>
+    </div>
+
+    <script>
+        // 1. Connect to your exact Firebase Realtime Database
+        const firebaseConfig = {
+            databaseURL: ""
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // 2. Reference the exact node where your ESP32-CAM is pushing data
+        const occupancyRef = database.ref('occupancy/current_count');
+        const countElement = document.getElementById('occupancy-count');
+        
+        // 3. Listen for real-time changes
+        occupancyRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data !== null) {
+                countElement.innerText = data;
+                
+                // Visual flash effect to show data update
+                countElement.style.color = '#ffffff';
+                setTimeout(() => { 
+                    countElement.style.color = '#00e676'; 
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>
